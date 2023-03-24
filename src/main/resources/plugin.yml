@@ -1,0 +1,5 @@
+name: WhitelistAddBot
+version: '${project.version}'
+main: jp.zaemongames.whitelistaddbot.WhitelistAddBot
+api-version: 1.19
+load: STARTUP
