@@ -17,14 +17,18 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public final class WhitelistAddBot extends JavaPlugin {
+public final class WhitelistAddBot extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
@@ -38,10 +42,20 @@ public final class WhitelistAddBot extends JavaPlugin {
         builder.setChunkingFilter(ChunkingFilter.ALL);
         JDA jda = builder.build();
         jda.addEventListener(new Listener());
+
+        getServer().getPluginManager().registerEvents(this, this);
     }
 
     @Override
     public void onDisable() {
+    }
+
+
+    @EventHandler
+    public void onPlayer(AsyncPlayerPreLoginEvent e) {
+        if (!Bukkit.getOfflinePlayer(e.getUniqueId()).isWhitelisted()) {
+            e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_WHITELIST, "Discordサーバー内 " + ChatColor.GOLD + "#ざえもん鯖" + ChatColor.WHITE + " にて " + ChatColor.AQUA + "/whitelist" + ChatColor.WHITE + " コマンドでホワイトリストに登録してください。");
+        }
     }
 
     private static class Listener extends ListenerAdapter {
@@ -60,16 +74,9 @@ public final class WhitelistAddBot extends JavaPlugin {
 
             if (event.getChannel().getId().equals("1088773480754982932")) {
                 if (event.getName().equals("whitelist")) {
-                    TextInput playerNameInput = TextInput.create("playerName", "プレイヤー名", TextInputStyle.SHORT)
-                            .setRequired(true)
-                            .setMinLength(1)
-                            .setValue(event.getUser().getName())
-                            .build();
+                    TextInput playerNameInput = TextInput.create("playerName", "プレイヤー名", TextInputStyle.SHORT).setRequired(true).setMinLength(1).setValue(event.getUser().getName()).build();
 
-                    Modal modal = Modal.create("whitelistModal", "プレイヤーを追加する")
-                            .setTitle("プレイヤーを追加する")
-                            .addActionRow(playerNameInput)
-                            .build();
+                    Modal modal = Modal.create("whitelistModal", "プレイヤーを追加する").setTitle("プレイヤーを追加する").addActionRow(playerNameInput).build();
 
                     event.replyModal(modal).queue();
                 }
